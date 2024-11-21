@@ -29,9 +29,6 @@ rail_network <- st_read("./data/Shapefiles/ne_10m_railroads/ne_10m_railroads.shp
 
 # Extract data for grain
 data_grain <- data_clean %>% 
-  mutate(year = year(date)) %>% 
-  filter(cargo == "зерно,прод.перем.",
-         year == 2020) %>% 
   group_by(origin, destination, org, dst) %>% 
   summarise(vahoniv = sum(vahoniv),
             ton = sum(ton)) %>% 
@@ -70,10 +67,7 @@ rts$to <- lapply(rts$to, function(x) x[-1])
   
 # Aggregate flows to an undirected graph
 flow_agg <- data_clean %>% 
-  filter(cargo == "зерно,прод.перем.") %>%
   inner_join(rts, by=c("org"="org", "dst"="dst")) %>% 
-  mutate(year = year(date)) %>% 
-  filter(year == 2020) %>% 
   unnest() %>% 
   group_by(year, path) %>% 
   summarise(vahoniv = sum(vahoniv),
@@ -92,10 +86,7 @@ st_write(flow_agg_sf, "./data/_export data/grain flows agg.geojson")
 
 # Aggregate flows to a directed graph
 flow_agg_dir <- data_clean %>% 
-  filter(cargo == "зерно,прод.перем.") %>%
   inner_join(rts, by=c("org"="org", "dst"="dst")) %>% 
-  mutate(year = year(date)) %>% 
-  filter(year == 2020) %>% 
   unnest() %>% 
   group_by(year, path, from, to) %>% 
   summarise(vahoniv = sum(vahoniv),
